@@ -116,3 +116,100 @@ customer123/date/abcde123.json
 
 - Enable Azure Application Insights on Azure Functions and API service.
 - Log successes, failures, fallback reads, and latency metrics.
+
+### 5. key challenges/scenarios where the system could break in production, along with quick mitigation strategies:
+
+### 1. Data Sync Delay / Archival Job Fails
+Scenario: Timer-trigger Function fails; old records are not archived on time.
+
+Impact: Cosmos DB keeps growing; cost spikes.
+
+Solution:
+
+Add retry policies & alerts (Azure Monitor).
+
+Use Cosmos DB Change Feed as a more real-time archival trigger.
+
+Idempotent archival logic to safely rerun jobs.
+
+### 2. Fallback Read from Blob Storage Fails
+Scenario: Read API can’t fetch from Blob due to latency, permission issues, or object not found.
+
+Impact: Data not returned; API shows 404 or slow responses.
+
+Solution:
+
+Implement caching (Redis/Memory) for recent cold data access.
+
+Add Blob access retry logic & exponential backoff.
+
+Alert on high fallback failure rate (App Insights telemetry).
+
+### 3. Cosmos DB Query RU Throttling
+Scenario: RU/s gets exhausted during peak read/write.
+
+Impact: API latency increases; users face timeouts.
+
+Solution:
+
+Scale Cosmos DB RU/s dynamically (Autoscale).
+
+Optimize partitioning strategy.
+
+Use read replicas (Cosmos DB multi-region reads) if globally distributed.
+
+### 4. Data Loss During Archival Deletion
+Scenario: Data gets deleted from Cosmos DB before safely archived.
+
+Impact: Permanent data loss.
+
+Solution:
+
+Implement soft delete flags first.
+
+Delete data only after archival confirmation.
+
+Maintain a temporary backup before hard delete (Blob/Export).
+
+### 5. Increased Latency for Cold Data Access
+Scenario: Users experience high latency fetching cold data from Blob Storage.
+
+Impact: Poor user experience on old data retrieval.
+
+Solution:
+
+Cache cold data post first fetch.
+
+Consider Azure CDN or Blob Cache for frequently accessed cold data.
+
+### 6. Authentication/Authorization Failures
+Scenario: Misconfigured managed identity or connection string rotation.
+
+Impact: Function App loses access to Cosmos DB/Blob.
+
+Solution:
+
+Use Managed Identity instead of keys.
+
+Automate credential rotation with Key Vault.
+
+Add health probes & alerts for access failures.
+
+### 7. API Contract/Schema Drift
+Scenario: Archived JSON schema evolves but fallback read logic doesn’t adapt.
+
+Impact: Deserialization errors, API failures.
+
+Solution:
+
+Version your JSON schema.
+
+Maintain backward compatibility in deserialization logic.
+
+## Note
+Please find the solution to the Cost Optimization Challenge: Managing Billing Records Solution.
+
+The proposed solution is based on my understanding of leveraging Azure Function App, storage blob for automation and modifying the API layer to seamlessly retrieve data.
+
+I've utilized ChatGPt for Azure function app code, Diragram check and posible breakdown test cases and scenerios. 
+
