@@ -106,7 +106,7 @@ def main(mytimer: func.TimerRequest) -> None:
 
 ### B. Blob Storage Data organtization example:
 
-customer123/date/abcde123.json
+#### customer123/date/abcde123.json
 
 ## 3. Architectural diagram
 ![Architecture Diagram](./Architectural%20Diagram.jpg)
@@ -117,7 +117,7 @@ customer123/date/abcde123.json
 - Enable Azure Application Insights on Azure Functions and API service.
 - Log successes, failures, fallback reads, and latency metrics.
 
-### 5. key challenges/scenarios where the system could break in production, along with quick mitigation strategies:
+## 5. key challenges/scenarios where the system could break in production, along with quick mitigation strategies:
 
 ### 1. Data Sync Delay / Archival Job Fails
 Scenario: Timer-trigger Function fails; old records are not archived on time.
