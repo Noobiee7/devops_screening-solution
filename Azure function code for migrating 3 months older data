@@ -1,0 +1,56 @@
+import datetime
+import json
+import logging
+import azure.functions as func
+from azure.cosmos import CosmosClient, PartitionKey
+from azure.storage.blob import BlobServiceClient, ContentSettings
+
+# Cosmos DB Configuration
+COSMOS_ENDPOINT = "<COSMOS-DB-ENDPOINT>"
+COSMOS_KEY = "<COSMOS-DB-KEY>"
+DATABASE_NAME = "<DATABASE-NAME>"
+CONTAINER_NAME = "<CONTAINER-NAME>"
+
+# Azure Blob Storage Configuration
+BLOB_CONNECTION_STRING = "<BLOB-STORAGE-CONNECTION-STRING>"
+BLOB_CONTAINER_NAME = "<BLOB-CONTAINER-NAME>"
+
+def main(mytimer: func.TimerRequest) -> None:
+    utc_timestamp = datetime.datetime.utcnow()
+    logging.info(f"Python timer trigger function ran at {utc_timestamp}")
+
+    # Initialize Cosmos Client
+    cosmos_client = CosmosClient(COSMOS_ENDPOINT, COSMOS_KEY)
+    database = cosmos_client.get_database_client(DATABASE_NAME)
+    container = database.get_container_client(CONTAINER_NAME)
+
+    # Initialize Blob Service Client
+    blob_service_client = BlobServiceClient.from_connection_string(BLOB_CONNECTION_STRING)
+    blob_container_client = blob_service_client.get_container_client(BLOB_CONTAINER_NAME)
+
+    # Calculate Date Threshold (Older than 3 Months)
+    threshold_date = (utc_timestamp - datetime.timedelta(days=90)).isoformat()
+
+    query = f"SELECT * FROM c WHERE c.date < '{threshold_date}' AND (NOT IS_DEFINED(c.archived) OR c.archived = false)"
+    items = container.query_items(query=query, enable_cross_partition_query=True)
+
+    for item in items:
+        record_id = item['id']
+        partition_key = item['partitionKey']  # Adjust based on your schema
+        
+        # Prepare JSON blob content
+        blob_name = f"{record_id}.json"
+        blob_data = json.dumps(item)
+
+        # Upload to Blob Storage (Cool Tier)
+        blob_client = blob_container_client.get_blob_client(blob_name)
+        blob_client.upload_blob(blob_data, overwrite=True, content_settings=ContentSettings(content_type='application/json'), standard_blob_tier="Cool")
+
+        # Mark item as archived in Cosmos DB
+        item['archived'] = True
+        container.upsert_item(item)
+
+        logging.info(f"Archived Record ID: {record_id} to Blob Storage")
+
+    logging.info("Archival process completed.")
+
