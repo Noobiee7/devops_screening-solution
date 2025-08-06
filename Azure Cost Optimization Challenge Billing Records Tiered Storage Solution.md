@@ -35,12 +35,13 @@ On write: Continue writing to Cosmos DB as before.
 Add 'fallback to blob' logic in backend API and This keeps API behavior unchanged for clients and preserves backward compatibility.
 
 for eg:
+```
   function getBillingRecord(recordId) {
   record = CosmosDB.get(recordId)
   if (record) return record
   else return BlobStorage.readJsonBlob(recordId)
 }
-
+```
 ## 2. Code implementation:
 
 ### A. Azure Function for Archiving data in Storage Blob (Python)
