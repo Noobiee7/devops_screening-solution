@@ -19,17 +19,17 @@
 ## 2. Solution for Managing Billing Records in Azure Serverless Architecture.
 
 ### 1. Simplicity & ease of implementation
-Answer: 
+
 Azure Function (Timer Triggered): Archives old data (older than 3 months) to Azure Blob Storage (Cool Tier) stores old records as compressed JSON. Schedule a daily/weekly job.
 This approach requires minimal changes and is easy to deploy and maintain.
 
 ### 2. No Data loss and No Downtime 
-Answer:
+
 Implement a two-phase archival process:
 Azure Function reads and verifies records before deleting from Cosmos DB. Each record is saved in Blob Storage and validated (e.g., using checksum). No hard deletes until successful archival confirmation. Cosmos DB remains active and migration is asynchronous with no service interruption.
 
 ### 3. No change in API
-Answer:
+
 On read: First check Cosmos DB, if not found, fetch from Blob Storage.
 On write: Continue writing to Cosmos DB as before. 
 Add 'fallback to blob' logic in backend API and This keeps API behavior unchanged for clients and preserves backward compatibility.
@@ -45,6 +45,7 @@ for eg:
 
 ### A. Azure Function for Archiving data in Storage Blob (Python)
 
+```python
 import datetime
 import json
 import logging
@@ -100,6 +101,7 @@ def main(mytimer: func.TimerRequest) -> None:
         logging.info(f"Archived Record ID: {record_id} to Blob Storage")
 
     logging.info("Archival process completed.")
+```
 
 ### B. Blob Storage Data organtization example:
 
