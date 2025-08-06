@@ -124,7 +124,7 @@ Scenario: Timer-trigger Function fails; old records are not archived on time.
 
 Impact: Cosmos DB keeps growing; cost spikes.
 
-Solution:
+#### Solution:
 
 Add retry policies & alerts (Azure Monitor).
 
@@ -137,7 +137,7 @@ Scenario: Read API can’t fetch from Blob due to latency, permission issues, or
 
 Impact: Data not returned; API shows 404 or slow responses.
 
-Solution:
+#### Solution:
 
 Implement caching (Redis/Memory) for recent cold data access.
 
@@ -150,7 +150,7 @@ Scenario: RU/s gets exhausted during peak read/write.
 
 Impact: API latency increases; users face timeouts.
 
-Solution:
+#### Solution:
 
 Scale Cosmos DB RU/s dynamically (Autoscale).
 
@@ -163,7 +163,7 @@ Scenario: Data gets deleted from Cosmos DB before safely archived.
 
 Impact: Permanent data loss.
 
-Solution:
+#### Solution:
 
 Implement soft delete flags first.
 
@@ -176,7 +176,7 @@ Scenario: Users experience high latency fetching cold data from Blob Storage.
 
 Impact: Poor user experience on old data retrieval.
 
-Solution:
+#### Solution:
 
 Cache cold data post first fetch.
 
@@ -187,7 +187,7 @@ Scenario: Misconfigured managed identity or connection string rotation.
 
 Impact: Function App loses access to Cosmos DB/Blob.
 
-Solution:
+#### Solution:
 
 Use Managed Identity instead of keys.
 
@@ -200,7 +200,7 @@ Scenario: Archived JSON schema evolves but fallback read logic doesn’t adapt.
 
 Impact: Deserialization errors, API failures.
 
-Solution:
+#### Solution:
 
 Version your JSON schema.
 
